@@ -7,10 +7,10 @@ export const modules=[
   ["Customers",Users],["Payments",CreditCard],["Complaints",MessageSquare],["Analytics",BarChart3],["Staff",Users],["Staff Performance",BarChart3],["Operations",Settings],["Settings",Settings]
 ];
 
-export default function Sidebar({collapsed,setCollapsed,active,setActive}){
- return <aside className={collapsed?"sidebar collapsed":"sidebar"}>
+export default function Sidebar({collapsed,setCollapsed,active,setActive,role}){
+ const allowed=role?modules.filter(([label])=>role==="Manager"||["Manager"].includes(role)||({Cashier:["Dashboard","POS","Tables","Orders","Customers","Payments","Complaints"],Server:["Dashboard","POS","Tables","Orders","Customers"],Kitchen:["Dashboard","Orders","Kitchen"],Rider:["Dashboard","Delivery"]}[role]||[]).includes(label)):modules;\n return <aside className={collapsed?"sidebar collapsed":"sidebar"}>
   <div className="brand"><div className="brand-mark">R</div>{!collapsed&&<div><strong>Restaurant POS</strong><span>Web Management System</span></div>}</div>
-  <nav>{modules.map(([label,Icon])=><button className={active===label?"nav-item active":"nav-item"} onClick={()=>setActive(label)} key={label} title={label}><Icon size={19}/>{!collapsed&&<span>{label}</span>}</button>)}</nav>
+  <nav>{allowed.map(([label,Icon])=><button className={active===label?"nav-item active":"nav-item"} onClick={()=>setActive(label)} key={label} title={label}><Icon size={19}/>{!collapsed&&<span>{label}</span>}</button>)}</nav>
   <button className="collapse" onClick={()=>setCollapsed(!collapsed)}>{collapsed?<PanelLeftOpen size={19}/>:<PanelLeftClose size={19}/>} {!collapsed&&<span>Collapse menu</span>}</button>
  </aside>
 }
