@@ -5,4 +5,4 @@ export const rolePermissions={
  Kitchen:["Dashboard","Orders","Kitchen"],
  Rider:["Dashboard","Delivery"]
 };
-export const canAccess=(role,module)=>role==="Manager"||(rolePermissions[role]||[]).includes(module);
+export const canAccess=(role,module)=>rolePermissions[role]?.includes(module)||role==="Manager";
