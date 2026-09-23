@@ -9,6 +9,12 @@ import Orders from "./components/Orders";
 import Kitchen from "./components/Kitchen";
 import Delivery from "./components/Delivery";
 import MenuManager from "./components/MenuManager";
+import Staff from "./components/Staff";
+import Customers from "./components/Customers";
+import DeliveryRiders from "./components/DeliveryRiders";
+import {initialStaff,staffRoles} from "./data/staff";
+import {initialCustomers,customerTypes} from "./data/customers";
+import {initialRiders,riderStatuses} from "./data/delivery";
 import {menuItems,categories,modifiers} from "./data/menu";
 import {initialTables,tableStatuses} from "./data/tables";
 import {loadStore,saveStore} from "./lib/storage";
@@ -23,7 +29,10 @@ export default function App(){
  const [tables,setTables]=useState(()=>loadStore("restaurant-tables",initialTables));
  const [orders,setOrders]=useState(()=>loadStore("restaurant-orders",[]));
  const [cart,setCart]=useState([]),[channel,setChannel]=useState("Dine In"),[selectedTable,setSelectedTable]=useState(null);
- useEffect(()=>saveStore("restaurant-menu",menu),[menu]); useEffect(()=>saveStore("restaurant-tables",tables),[tables]); useEffect(()=>saveStore("restaurant-orders",orders),[orders]);
+ const [staff,setStaff]=useState(()=>loadStore("restaurant-staff",initialStaff));
+ const [customers,setCustomers]=useState(()=>loadStore("restaurant-customers",initialCustomers));
+ const [riders,setRiders]=useState(()=>loadStore("restaurant-riders",initialRiders));
+ useEffect(()=>saveStore("restaurant-menu",menu),[menu]); useEffect(()=>saveStore("restaurant-tables",tables),[tables]); useEffect(()=>saveStore("restaurant-orders",orders),[orders]); useEffect(()=>saveStore("restaurant-staff",staff),[staff]); useEffect(()=>saveStore("restaurant-customers",customers),[customers]); useEffect(()=>saveStore("restaurant-riders",riders),[riders]);
 
  const todaySales=orders.filter(o=>o.status===orderStatuses[3]).reduce((s,o)=>s+o.total,0);
  const occupied=tables.filter(t=>t.status!=="Vacant").length;
@@ -60,7 +69,7 @@ export default function App(){
   {active==="Orders"&&<Orders orders={orders} update={updateOrder} money={money}/>}
   {active==="Kitchen"&&<Kitchen orders={orders} update={updateOrder} money={money}/>}
   {active==="Delivery"&&<Delivery orders={orders} update={updateOrder} money={money}/>}
-  {active==="Menu"&&<MenuManager menu={menu} setMenu={setMenu} categories={categories} money={money}/>}
+  {active==="Menu"&&<MenuManager menu={menu} setMenu={setMenu} categories={categories} money={money}/>} {active==="Staff"&&<Staff staff={staff} setStaff={setStaff} roles={staffRoles}/>} {active==="Customers"&&<Customers customers={customers} setCustomers={setCustomers} types={customerTypes}/>} {active==="Delivery"&&<Delivery orders={orders} update={updateOrder} money={money}/>}
   {!["Dashboard","POS","Tables","Orders","Kitchen","Delivery","Menu"].includes(active)&&<ModulePreview name={active}/>}
  </main></div>;
 }
