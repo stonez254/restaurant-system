@@ -12,12 +12,14 @@ export default function Analytics({orders,menu,recipes,ingredients,movements,adj
   const selected=orders.filter(inRange);
   const menuMap=Object.fromEntries(menu.map(x=>[x.id,x]));
   const ingredientMap=Object.fromEntries(ingredients.map(x=>[x.id,x]));
-  let revenue=0,cogs=0;
+  let grossSales=0,discounts=0,cogs=0;
   const channels={},categories={},items={},hours={};
   selected.forEach(o=>{
-   revenue+=Number(o.total||0);
-   const h=new Date(o.createdAt).getHours(); hours[h]=(hours[h]||0)+Number(o.total||0);
-   channels[o.channel]=(channels[o.channel]||0)+Number(o.total||0);
+   if(o.status==="Voided")return;
+   const net=Number(o.total||0),discount=Number(o.discount?.amount||0),gross=net+discount;
+   grossSales+=gross; discounts+=discount;
+   const h=new Date(o.createdAt).getHours(); hours[h]=(hours[h]||0)+net;
+   channels[o.channel]=(channels[o.channel]||0)+net;
    (o.items||[]).forEach(item=>{
     const sales=Number(item.price||0)*Number(item.qty||0);
     const cat=menuMap[item.id]?.category||"Other";
@@ -29,7 +31,8 @@ export default function Analytics({orders,menu,recipes,ingredients,movements,adj
   });
   const refunds=(adjustments||[]).filter(a=>a.type==="Refund"&&new Date(a.createdAt).getTime()>=cutoff).reduce((s,a)=>s+Number(a.amount||0),0);
   const waste=(movements||[]).filter(m=>m.type==="Waste"&&new Date(m.createdAt).getTime()>=cutoff).reduce((s,m)=>s+Number(m.cost||0),0);
-  return {selected,revenue,cogs,refunds,waste,net:revenue-refunds,gross:revenue-cogs,channels,categories,hours,items:Object.values(items).sort((a,b)=>b.sales-a.sales)};
+  const netSales=Math.max(0,grossSales-discounts-refunds);
+  return {selected,grossSales,discounts,cogs,refunds,waste,net:netSales,grossProfit:netSales-cogs,channels,categories,hours,items:Object.values(items).sort((a,b)=>b.sales-a.sales)};
  },[orders,menu,recipes,ingredients,movements,adjustments,cutoff]);
  const maxChannel=Math.max(1,...Object.values(data.channels));
  const maxCategory=Math.max(1,...Object.values(data.categories));
@@ -41,7 +44,7 @@ export default function Analytics({orders,menu,recipes,ingredients,movements,adj
    <Metric icon={Receipt} label="Gross Sales" value={money(data.revenue)}/>
    <Metric icon={Wallet} label="Net Sales" value={money(data.net)}/>
    <Metric icon={Package} label="Est. COGS" value={money(data.cogs)}/>
-   <Metric icon={TrendingUp} label="Gross Profit" value={money(data.gross)}/>
+   <Metric icon={TrendingUp} label="Gross Profit" value={money(data.grossProfit)}/>
    <Metric icon={TrendingDown} label="Waste Cost" value={money(data.waste)}/>
    <Metric icon={Receipt} label="Refunds" value={money(data.refunds)}/>
    <Metric icon={BarChart3} label="Orders" value={data.selected.length}/>
@@ -53,7 +56,7 @@ export default function Analytics({orders,menu,recipes,ingredients,movements,adj
    <Panel title="Peak Ordering Periods">{Object.entries(data.hours).length?Object.entries(data.hours).sort((a,b)=>Number(a[0])-Number(b[0])).map(([h,v])=><Bar key={h} label={formatHour(Number(h))} value={v} max={maxHour}/>):<EmptyAnalytics/>}</Panel>
    <Panel title="Top-Selling Items"><div className="analytics-table">{data.items.length?data.items.slice(0,8).map((x,i)=><div className="analytics-row" key={x.name+i}><span><b>{i+1}.</b> {x.name}</span><span>{x.qty} sold</span><strong>{money(x.sales)}</strong></div>):<EmptyAnalytics/>}</div></Panel>
   </div>
-  <div className="panel profit-note"><div className="panel-head"><h3>Profit calculation</h3></div><div className="profit-body"><div><span>Net Sales</span><b>{money(data.net)}</b></div><div><span>Estimated COGS</span><b>- {money(data.cogs)}</b></div><div><span>Estimated Gross Profit</span><b>{money(data.net-data.cogs)}</b></div><p>COGS is estimated from the current ingredient cost and recipe quantities. Historical batch costing and labor/overhead/rider payouts will be added to the intelligence layer later.</p></div></div>
+  <div className="panel profit-note"><div className="panel-head"><h3>Profit calculation</h3></div><div className="profit-body"><div><span>Gross Sales</span><b>{money(data.grossSales)}</b></div><div><span>Discounts</span><b>- {money(data.discounts)}</b></div><div><span>Net Sales</span><b>{money(data.net)}</b></div><div><span>Estimated COGS</span><b>- {money(data.cogs)}</b></div><div><span>Estimated Gross Profit</span><b>{money(data.grossProfit)}</b></div><p>COGS is estimated from the current ingredient cost and recipe quantities. Historical batch costing and labor/overhead/rider payouts will be added to the intelligence layer later.</p></div></div>
  </section>;
 }
 function Metric({icon:Icon,label,value}){return <div className="card analytics-card"><Icon size={18}/><span>{label}</span><strong>{value}</strong></div>}
