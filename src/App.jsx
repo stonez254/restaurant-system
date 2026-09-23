@@ -58,24 +58,49 @@ function applyDiscount(next){
 function saveCustomer(data){const clean={name:(data.name||"").trim(),phone:(data.phone||"").trim(),address:(data.address||"").trim(),type:data.type||"Regular"};if(!clean.name||!clean.phone)return null;const existing=customers.find(x=>x.phone&&x.phone.trim()===clean.phone);if(existing){setCustomers(xs=>xs.map(x=>x.id===existing.id?{...x,...clean,updatedAt:new Date().toISOString()}:x));log("Customer Updated",existing.id,"Saved from POS");return existing.id}const id="CUS-"+Date.now();setCustomers(xs=>[{id,...clean,orders:0,active:true,createdAt:new Date().toISOString()},...xs]);log("Customer Created",id,"Saved from POS");return id}
  function recordPayment(orderId,amount,method){
   const n=Number(amount)||0;
-  setShifts(xs=>xs.map(s=>s.status==="Open"?{...s,cashSales:(Number(s.cashSales)||0)+(method==="Cash"?n:0)}:s));
-  log("Payment Recorded",orderId,money(n)+" • "+method);
+  const actor=staff.find(s=>String(s.id)===String(activeStaffId));
+  const activeShift=shifts.find(s=>s.status==="Open");
+  if(!activeShift||!actor)return null;
+  log("Payment Recorded",orderId,money(n)+" • "+method+" • Shift "+activeShift.id);
+  return {staffId:actor.id,staffName:actor.name,shiftId:activeShift.id};
 }
-function refundPayment(orderId,amount,reason,approvedBy){
+function refundPayment(orderId,amount,reason,approvedBy,paymentId=null){
   const o=orders.find(x=>x.id===orderId);if(!o)return false;
-  const paid=payments.filter(p=>p.orderId===orderId&&p.status==="Paid").reduce((s,p)=>s+Number(p.amount||0),0);
-  const alreadyRefunded=payments.filter(p=>p.orderId===orderId&&p.status==="Refunded").reduce((s,p)=>s+Number(p.amount||0),0);
-  const n=Math.max(0,Number(amount)||0),available=Math.max(0,paid-alreadyRefunded);
-  if(n<=0||n>available)return false;
-  const now=new Date().toISOString();
-  setPayments(ps=>[{id:"REF-"+Date.now(),orderId,amount:n,method:"Refund",status:"Refunded",reason,approvedBy,createdAt:now},...ps]);
-  setAdjustments(as=>[{id:"ADJ-"+Date.now(),orderId,type:"Refund",amount:n,note:reason,createdAt:now,approvedBy},...as]);
-  setOrders(os=>os.map(x=>x.id===orderId?{...x,paymentStatus:n>=available?"Refunded":"Partially Paid"}:x));
-  setShifts(xs=>xs.map(s=>s.status==="Open"?{...s,cashSales:Math.max(0,(Number(s.cashSales)||0)-n)}:s));
-  log("Payment Recorded",orderId,"Refund "+money(n)+" • "+reason+" • Approved by "+(staff.find(x=>String(x.id)===String(approvedBy))?.name||approvedBy));
+  const originals=payments.filter(p=>p.orderId===orderId&&p.status==="Paid"&&(!paymentId||p.id===paymentId));
+  const refundedByPayment=payments.filter(p=>p.orderId===orderId&&p.status==="Refunded"&&p.refundOfPaymentId).reduce((m,p)=>(m[p.refundOfPaymentId]=(m[p.refundOfPaymentId]||0)+Number(p.amount||0),m),{});
+  const n=Math.max(0,Number(amount)||0);
+  let remaining=n;
+  const allocations=[];
+  for(const p of originals){
+    const available=Math.max(0,Number(p.amount||0)-(refundedByPayment[p.id]||0));
+    if(available<=0)continue;
+    const take=Math.min(available,remaining);
+    if(take>0){allocations.push({payment:p,amount:take});remaining-=take;}
+    if(remaining<=0)break;
+  }
+  if(n<=0||remaining>0||!allocations.length)return false;
+  const now=new Date().toISOString(),actor=staff.find(x=>String(x.id)===String(approvedBy)),newRefunds=allocations.map((a,i)=>({id:"REF-"+Date.now()+"-"+i,orderId,amount:a.amount,method:"Refund",originalMethod:a.payment.method,refundOfPaymentId:a.payment.id,status:"Refunded",reason,approvedBy,approvedByName:actor?.name||approvedBy,createdAt:now}));
+  setPayments(ps=>[...newRefunds,...ps]);
+  setAdjustments(as=>[{id:"ADJ-"+Date.now(),orderId,type:"Refund",amount:n,note:reason,createdAt:now,approvedBy,approvedByName:actor?.name||approvedBy},...as]);
+  const totalPaid=payments.filter(p=>p.orderId===orderId&&p.status==="Paid").reduce((s,p)=>s+Number(p.amount||0),0);
+  const totalRefunded=payments.filter(p=>p.orderId===orderId&&p.status==="Refunded").reduce((s,p)=>s+Number(p.amount||0),0)+n;
+  setOrders(os=>os.map(x=>x.id===orderId?{...x,paymentStatus:totalRefunded>=totalPaid?"Refunded":"Partially Paid"}:x));
+  log("Refund Recorded",orderId,allocations.map(a=>money(a.amount)+" "+a.payment.method).join(", ")+" • "+reason+" • Approved by "+(actor?.name||approvedBy));
   return true;
 }
-function voidOrder(id){const o=orders.find(x=>x.id===id);if(!o||o.status==="Voided")return;let approver=activeStaffId;const actor=staff.find(x=>String(x.id)===String(activeStaffId));if(actor?.role!=="Manager"){const code=window.prompt("Manager approval required. Enter manager staff ID:");const manager=staff.find(x=>String(x.id)===String(code)&&x.role==="Manager"&&x.active!==false);if(!manager)return alert("Valid active manager approval required.");approver=manager.id;}const reason=window.prompt("Void reason (required)");if(!reason?.trim())return;if(!window.confirm("Void "+o.id+"? This will reverse its inventory consumption."))return;if(o.consumption?.length)restoreConsumption(o.consumption,o.id);setOrders(os=>os.map(x=>x.id===id?{...x,status:"Voided",voidReason:reason.trim(),voidedAt:new Date().toISOString()}:x));log("Order Voided",id,reason.trim()+" • Approved by "+(staff.find(x=>String(x.id)===String(approver))?.name||"Manager"));if(o.tableId)setTables(ts=>ts.map(t=>t.id===o.tableId?{...t,status:"Vacant",orderId:null,seatState:(t.seatState||[]).map(s=>({...s,occupied:false}))}:t))}
+function refundOrderFully(orderId,reason,approvedBy){
+  const o=orders.find(x=>x.id===orderId);if(!o)return false;
+  const paid=payments.filter(p=>p.orderId===orderId&&p.status==="Paid").reduce((s,p)=>s+Number(p.amount||0),0);
+  const refunded=payments.filter(p=>p.orderId===orderId&&p.status==="Refunded").reduce((s,p)=>s+Number(p.amount||0),0);
+  const remaining=Math.max(0,paid-refunded);
+  return remaining>0?refundPayment(orderId,remaining,reason,approvedBy):true;
+}
+function voidOrder(id){const o=orders.find(x=>x.id===id);if(!o||o.status==="Voided")return;let approver=activeStaffId;const actor=staff.find(x=>String(x.id)===String(activeStaffId));if(actor?.role!=="Manager"){const code=window.prompt("Manager approval required. Enter manager staff ID:");const manager=staff.find(x=>String(x.id)===String(code)&&x.role==="Manager"&&x.active!==false);if(!manager)return alert("Valid active manager approval required.");approver=manager.id;}const reason=window.prompt("Void reason (required)");if(!reason?.trim())return;const paid=payments.filter(p=>p.orderId===id&&p.status==="Paid").reduce((s,p)=>s+Number(p.amount||0),0);
+ const refunded=payments.filter(p=>p.orderId===id&&p.status==="Refunded").reduce((s,p)=>s+Number(p.amount||0),0);
+ const outstandingPaid=Math.max(0,paid-refunded);
+ if(!window.confirm("Void "+o.id+"? "+(outstandingPaid>0?"Any paid amount will be fully refunded. ":"")+"Inventory consumption will be reversed."))return;
+ if(outstandingPaid>0&&!refundOrderFully(id,"Full refund on void",approver))return alert("Refund could not be completed. Order was not voided.");
+ if(o.consumption?.length)restoreConsumption(o.consumption,o.id);setOrders(os=>os.map(x=>x.id===id?{...x,status:"Voided",voidReason:reason.trim(),voidedAt:new Date().toISOString()}:x));log("Order Voided",id,reason.trim()+" • Approved by "+(staff.find(x=>String(x.id)===String(approver))?.name||"Manager"));if(o.tableId)setTables(ts=>ts.map(t=>t.id===o.tableId?{...t,status:"Vacant",orderId:null,seatState:(t.seatState||[]).map(s=>({...s,occupied:false}))}:t))}
  const resetData=()=>{localStorage.clear();window.location.reload()};
  const openTable=t=>{if(t.status==="Vacant"){setSelectedTable(t);setChannel("Dine In");setActive("POS")}else if(t.status==="Dirty/Needs Cleaning")cleanTable(t)};
  return <div className="app"><Sidebar collapsed={collapsed} setCollapsed={setCollapsed} active={active} setActive={m=>canAccess(currentRole,m)&&setActive(m)} role={staff.find(s=>String(s.id)===String(activeStaffId))?.role||"Manager"}/><main className="main"><Topbar active={active}/>
@@ -87,7 +112,7 @@ function voidOrder(id){const o=orders.find(x=>x.id===id);if(!o||o.status==="Void
  {active==="Delivery"&&<Delivery orders={orders} update={updateOrder} money={money} riders={riders} setRiders={setRiders} riderStatuses={riderStatuses} setOrders={setOrders}/>}
  {active==="Menu"&&<MenuManager menu={menu} setMenu={setMenu} categories={categories} money={money}/>}
  {active==="Inventory"&&<Inventory ingredients={ingredients} setIngredients={setIngredients} movements={movements} setMovements={setMovements} money={money}/>}
- {active==="Payments"&&<Payments orders={orders} payments={payments} setPayments={setPayments} setOrders={setOrders} money={money} staff={staff} activeStaffId={activeStaffId} refundPayment={refundPayment} recordPayment={recordPayment} log={log}/>} 
+ {active==="Payments"&&<Payments orders={orders} payments={payments} setPayments={setPayments} setOrders={setOrders} money={money} staff={staff} activeStaffId={activeStaffId} shifts={shifts} refundPayment={refundPayment} recordPayment={recordPayment} log={log}/>} 
  {active==="Complaints"&&<Complaints orders={orders} complaints={complaints} setComplaints={setComplaints} adjustments={adjustments} setAdjustments={setAdjustments} types={complaintTypes} statuses={complaintStatuses} resolutions={resolutions} money={money}/>}
  {active==="Analytics"&&<Analytics orders={orders} menu={menu} recipes={recipes} ingredients={ingredients} movements={movements} adjustments={adjustments}/>}
  {active==="Operations"&&<Operations staff={staff} shifts={shifts} setShifts={setShifts} auditLogs={auditLogs} money={money} activeStaffId={activeStaffId} setActiveStaffId={setActiveStaffId} orders={orders} payments={payments}/>}
