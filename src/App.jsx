@@ -68,8 +68,8 @@ export default function App(){
   {active==="Tables"&&<Tables tables={tables} onTable={toggleTable} tableStatuses={tableStatuses}/>}
   {active==="Orders"&&<Orders orders={orders} update={updateOrder} money={money}/>}
   {active==="Kitchen"&&<Kitchen orders={orders} update={updateOrder} money={money}/>}
-  {active==="Delivery"&&<Delivery orders={orders} update={updateOrder} money={money}/>}
-  {active==="Menu"&&<MenuManager menu={menu} setMenu={setMenu} categories={categories} money={money}/>} {active==="Staff"&&<Staff staff={staff} setStaff={setStaff} roles={staffRoles}/>} {active==="Customers"&&<Customers customers={customers} setCustomers={setCustomers} types={customerTypes}/>} {active==="Delivery"&&<Delivery orders={orders} update={updateOrder} money={money}/>}
+  {active==="Delivery"&&<Delivery orders={orders} update={updateOrder} money={money} riders={riders} setRiders={setRiders} riderStatuses={riderStatuses}/>}
+  {active==="Menu"&&<MenuManager menu={menu} setMenu={setMenu} categories={categories} money={money}/>} {active==="Staff"&&<Staff staff={staff} setStaff={setStaff} roles={staffRoles}/>} {active==="Customers"&&<Customers customers={customers} setCustomers={setCustomers} types={customerTypes}/>}
   {!["Dashboard","POS","Tables","Orders","Kitchen","Delivery","Menu"].includes(active)&&<ModulePreview name={active}/>}
  </main></div>;
 }
