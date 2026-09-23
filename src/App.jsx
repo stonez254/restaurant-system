@@ -51,7 +51,7 @@ export default function App(){
  {active==="Delivery"&&<Delivery orders={orders} update={updateOrder} money={money} riders={riders} setRiders={setRiders} riderStatuses={riderStatuses}/>}
  {active==="Menu"&&<MenuManager menu={menu} setMenu={setMenu} categories={categories} money={money}/>}
  {active==="Inventory"&&<Inventory ingredients={ingredients} setIngredients={setIngredients} movements={movements} setMovements={setMovements} money={money}/>}
- {active==="Payments"&&<Payments orders={orders} payments={payments} setPayments={setPayments} money={money}/>}
+ {active==="Payments"&&<Payments orders={orders} payments={payments} setPayments={setPayments} setOrders={setOrders} money={money}/>}
  {active==="Complaints"&&<Complaints orders={orders} complaints={complaints} setComplaints={setComplaints} adjustments={adjustments} setAdjustments={setAdjustments} types={complaintTypes} statuses={complaintStatuses} resolutions={resolutions} money={money}/>}
  {active==="Analytics"&&<Analytics orders={orders} menu={menu} recipes={recipes} ingredients={ingredients} movements={movements} adjustments={adjustments}/>}
  {active==="Staff"&&<Staff staff={staff} setStaff={setStaff} roles={staffRoles}/>}
