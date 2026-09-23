@@ -1,0 +1,19 @@
+export const inventoryUnits = ["kg","g","litre","ml","piece","pack","bottle"];
+export const initialIngredients = [
+ {id:"ING-001",name:"Rice",unit:"kg",stock:25,cost:180,reorderLevel:8,supplier:"Local Supplier"},
+ {id:"ING-002",name:"Chicken",unit:"kg",stock:18,cost:520,reorderLevel:6,supplier:"Fresh Foods"},
+ {id:"ING-003",name:"Beef",unit:"kg",stock:15,cost:650,reorderLevel:5,supplier:"Fresh Foods"},
+ {id:"ING-004",name:"Tilapia",unit:"kg",stock:10,cost:700,reorderLevel:3,supplier:"Lake Fresh"},
+ {id:"ING-005",name:"Potatoes",unit:"kg",stock:30,cost:120,reorderLevel:8,supplier:"Local Supplier"},
+ {id:"ING-006",name:"Cooking Oil",unit:"litre",stock:20,cost:280,reorderLevel:6,supplier:"Local Supplier"},
+ {id:"ING-007",name:"Onions",unit:"kg",stock:12,cost:140,reorderLevel:4,supplier:"Local Supplier"},
+ {id:"ING-008",name:"Tomatoes",unit:"kg",stock:15,cost:160,reorderLevel:5,supplier:"Local Supplier"},
+ {id:"ING-009",name:"Flour",unit:"kg",stock:20,cost:130,reorderLevel:5,supplier:"Bakery Supplier"},
+ {id:"ING-010",name:"Cheese",unit:"kg",stock:6,cost:900,reorderLevel:2,supplier:"Dairy Supplier"},
+ {id:"ING-011",name:"Milk",unit:"litre",stock:15,cost:180,reorderLevel:4,supplier:"Dairy Supplier"},
+ {id:"ING-012",name:"Sugar",unit:"kg",stock:10,cost:170,reorderLevel:3,supplier:"Local Supplier"},
+ {id:"ING-013",name:"Fruit Mix",unit:"kg",stock:8,cost:350,reorderLevel:2,supplier:"Fruit Supplier"},
+ {id:"ING-014",name:"Soda",unit:"bottle",stock:60,cost:65,reorderLevel:15,supplier:"Beverage Supplier"},
+ {id:"ING-015",name:"Tea Leaves",unit:"pack",stock:10,cost:250,reorderLevel:3,supplier:"Beverage Supplier"}
+];
+export const stockMovementTypes=["Purchase","Sale","Waste","Adjustment"];
