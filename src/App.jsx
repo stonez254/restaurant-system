@@ -79,7 +79,9 @@ function refundPayment(orderId,amount,reason,approvedBy,paymentId=null){
     if(remaining<=0)break;
   }
   if(n<=0||remaining>0||!allocations.length)return false;
-  const now=new Date().toISOString(),actor=staff.find(x=>String(x.id)===String(approvedBy)),newRefunds=allocations.map((a,i)=>({id:"REF-"+Date.now()+"-"+i,orderId,amount:a.amount,method:"Refund",originalMethod:a.payment.method,refundOfPaymentId:a.payment.id,status:"Refunded",reason,approvedBy,approvedByName:actor?.name||approvedBy,createdAt:now}));
+  const now=new Date().toISOString(),actor=staff.find(x=>String(x.id)===String(approvedBy)),activeShift=shifts.find(s=>s.status==="Open");
+ if(!activeShift)return false;
+ const newRefunds=allocations.map((a,i)=>({id:"REF-"+Date.now()+"-"+i,orderId,amount:a.amount,method:"Refund",originalMethod:a.payment.method,refundOfPaymentId:a.payment.id,status:"Refunded",reason,approvedBy,approvedByName:actor?.name||approvedBy,shiftId:activeShift.id,staffId:actor?.id||approvedBy,staffName:actor?.name||approvedBy,createdAt:now}));
   setPayments(ps=>[...newRefunds,...ps]);
   setAdjustments(as=>[{id:"ADJ-"+Date.now(),orderId,type:"Refund",amount:n,note:reason,createdAt:now,approvedBy,approvedByName:actor?.name||approvedBy},...as]);
   const totalPaid=payments.filter(p=>p.orderId===orderId&&p.status==="Paid").reduce((s,p)=>s+Number(p.amount||0),0);
