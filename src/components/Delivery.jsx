@@ -1,20 +1,15 @@
 import React,{useMemo} from "react";
-import {Truck,MapPin,Phone,UserRound,PackageCheck} from "lucide-react";
+import {Truck,MapPin,Phone,UserRound,PackageCheck,Wallet} from "lucide-react";
 import Empty from "./Empty";
 import DeliveryRiders from "./DeliveryRiders";
 export default function Delivery({orders,update,money,riders,setRiders,riderStatuses,setOrders}){
- const list=orders.filter(o=>o.channel==="Delivery");
- const ready=list.filter(o=>o.status==="Ready"), active=list.filter(o=>o.status!=="Served/Out for Delivery");
- const assign=(orderId,riderId)=>{const rider=riders.find(r=>String(r.id)===String(riderId));if(!rider)return;setOrders(os=>os.map(o=>o.id===orderId?{...o,riderId:rider.id,riderName:rider.name,deliveryStatus:"Assigned",assignedAt:new Date().toISOString()}:o));setRiders(rs=>rs.map(r=>r.id===rider.id?{...r,status:"Assigned"}:r));};
- const dispatch=(o,status)=>{const now=new Date().toISOString();setOrders(os=>os.map(x=>x.id===o.id?{...x,deliveryStatus:status,[status==="Picked Up"?"pickedUpAt":"deliveredAt"]:now,status:status==="Delivered"?"Served/Out for Delivery":x.status}:x));if(o.riderId&&status==="Delivered")setRiders(rs=>rs.map(r=>r.id===o.riderId?{...r,status:"Available"}:r));};
- return <section className="content">
-  <div className="section-head"><div><h2>Delivery Dispatch</h2><p>Assign ready orders, monitor riders and track pickup to delivery.</p></div><span className="count">{active.length} active</span></div>
-  {!list.length?<Empty icon={Truck} title="No delivery orders" text="Delivery orders placed through the POS will appear here."/>:<div className="dispatch-list">{list.map(o=><article className="dispatch-card" key={o.id}>
-   <div className="dispatch-head"><div><strong>{o.id}</strong><span>{o.status} • {o.deliveryStatus||"Unassigned"}</span></div><b>{money(o.total)}</b></div>
-   <div className="dispatch-meta"><span><UserRound size={13}/>{o.customerName||"Walk-in customer"}</span><span><Phone size={13}/>{o.customerPhone||"Phone not recorded"}</span><span><MapPin size={13}/>{o.deliveryAddress||"Address not recorded"}</span></div>
-   <div className="dispatch-items">{o.items.map(x=><span key={x.key}>{x.qty} × {x.name}</span>)}</div>
-   <div className="dispatch-actions"><select value={o.riderId||""} onChange={e=>assign(o.id,e.target.value)} disabled={o.deliveryStatus==="Delivered"}><option value="">Assign rider...</option>{riders.filter(r=>r.status==="Available"||r.id===o.riderId).map(r=><option value={r.id} key={r.id}>{r.name} • {r.phone||"No phone"}</option>)}</select>{o.deliveryStatus==="Assigned"&&<button onClick={()=>dispatch(o,"Picked Up")}><PackageCheck size={13}/> Picked Up</button>}{o.deliveryStatus==="Picked Up"&&<button onClick={()=>dispatch(o,"Delivered")}><Truck size={13}/> Delivered</button>}</div>
-  </article>)}</div>}
-  <DeliveryRiders riders={riders} setRiders={setRiders} statuses={riderStatuses}/>
- </section>;
+ const list=orders.filter(o=>o.channel==="Delivery"),active=list.filter(o=>o.status!=="Served/Out for Delivery");
+ const assign=(id,riderId)=>{const rider=riders.find(r=>String(r.id)===String(riderId));if(!rider)return;setOrders(os=>os.map(o=>o.id===id?{...o,riderId:rider.id,riderName:rider.name,deliveryStatus:"Assigned",assignedAt:new Date().toISOString()}:o));setRiders(rs=>rs.map(r=>r.id===rider.id?{...r,status:"Assigned"}:r))};
+ const dispatch=(o,status)=>{const now=new Date().toISOString();setOrders(os=>os.map(x=>x.id===o.id?{...x,deliveryStatus:status,[status==="Picked Up"?"pickedUpAt":"deliveredAt"]:now,status:status==="Delivered"?"Served/Out for Delivery":x.status}:x));if(o.riderId&&status==="Delivered")setRiders(rs=>rs.map(r=>r.id===o.riderId?{...r,status:"Available",trips:(r.trips||0)+1}:r))};
+ const cod=(o)=>{const amount=Number(prompt("COD amount collected",o.total)||0);if(amount<0)return;setOrders(os=>os.map(x=>x.id===o.id?{...x,codCollected:amount,codReconciled:true,codReconciledAt:new Date().toISOString()}:x));if(o.riderId)setRiders(rs=>rs.map(r=>r.id===o.riderId?{...r,codCollected:(r.codCollected||0)+amount}:r))};
+ return <section className="content"><div className="section-head"><div><h2>Delivery Dispatch</h2><p>Assign ready orders, monitor pickup, delivery and COD.</p></div><span className="count">{active.length} active</span></div>
+ {!list.length?<Empty icon={Truck} title="No delivery orders" text="Delivery orders placed through the POS will appear here."/>:<div className="dispatch-list">{list.map(o=><article className="dispatch-card" key={o.id}><div className="dispatch-head"><div><strong>{o.id}</strong><span>{o.status} • {o.deliveryStatus||"Unassigned"}{o.riderName?" • "+o.riderName:""}</span></div><b>{money(o.total)}</b></div>
+ <div className="dispatch-meta"><span><UserRound size={13}/>{o.customerName||"Walk-in customer"}</span><span><Phone size={13}/>{o.customerPhone||"Phone not recorded"}</span><span><MapPin size={13}/>{o.deliveryAddress||"Address not recorded"}</span></div><div className="dispatch-items">{o.items.map(x=><span key={x.key}>{x.qty} × {x.name}</span>)}</div>
+ <div className="dispatch-actions"><select value={o.riderId||""} onChange={e=>assign(o.id,e.target.value)} disabled={o.deliveryStatus==="Delivered"}><option value="">Assign rider...</option>{riders.filter(r=>r.status==="Available"||r.id===o.riderId).map(r=><option value={r.id} key={r.id}>{r.name} • {r.phone||"No phone"}</option>)}</select>{o.deliveryStatus==="Assigned"&&<button onClick={()=>dispatch(o,"Picked Up")}><PackageCheck size={13}/> Picked Up</button>}{o.deliveryStatus==="Picked Up"&&<button onClick={()=>dispatch(o,"Delivered")}><Truck size={13}/> Delivered</button>}{o.deliveryStatus==="Delivered"&&<button onClick={()=>cod(o)}><Wallet size={13}/> {o.codReconciled?"COD Reconciled":"Reconcile COD"}</button>}</div>
+ </article>)}</div>}<DeliveryRiders riders={riders} setRiders={setRiders} statuses={riderStatuses}/></section>;
 }
