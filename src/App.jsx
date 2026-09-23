@@ -48,6 +48,6 @@ export default function App(){
  {active==="Staff"&&<Staff staff={staff} setStaff={setStaff} roles={staffRoles}/>}
  {active==="Staff Performance"&&<StaffPerformance staff={staff} shifts={shifts} setShifts={setShifts} orders={orders} complaints={complaints}/>}
  {active==="Customers"&&<Customers customers={customers} setCustomers={setCustomers} types={customerTypes}/>}
- {active==="Settings"&&<Settings onReset={resetData}/>}\n {![ "Dashboard","POS","Tables","Orders","Kitchen","Delivery","Menu","Inventory","Payments","Complaints","Analytics","Staff","Staff Performance","Customers","Operations"].includes(active)&&<ModulePreview name={active}/>}
+ {active==="Settings"&&<Settings onReset={resetData}/>}\n {![ "Dashboard","POS","Tables","Orders","Kitchen","Delivery","Menu","Inventory","Payments","Complaints","Analytics","Staff","Staff Performance","Customers","Operations","Settings"].includes(active)&&<ModulePreview name={active}/>}
  </main></div>}
 function ModulePreview({name}){return <section className="content"><div className="module"><div className="module-icon"><Settings size={28}/></div><h2>{name}</h2><p>This module is connected to the shared POS data model. Its dedicated workflow is next in the build.</p></div></section>}
