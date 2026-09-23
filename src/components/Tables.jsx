@@ -1,0 +1,3 @@
+import React from "react";
+import {Table2} from "lucide-react";
+export default function Tables({tables,onTable,tableStatuses}){return <section className="content"><div className="section-head"><div><h2>Dining Floor</h2><p>Tap a vacant table to open an order. Tap dirty tables to mark them clean.</p></div><div className="legend">{tableStatuses.map(s=><span key={s}><i className={s.toLowerCase().replaceAll(/[^a-z]+/g,"-")}/>{s}</span>)}</div></div><div className="floor-grid">{tables.map(t=><button className={"floor-table "+t.status.toLowerCase().replaceAll(/[^a-z]+/g,"-")} onClick={()=>onTable(t)} key={t.id}><Table2 size={25}/><strong>{t.name}</strong><span>{t.seats} seats</span><small>{t.status}</small></button>)}</div></section>}
