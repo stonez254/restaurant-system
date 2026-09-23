@@ -1,0 +1,2 @@
+import React from "react";
+export default function Topbar({active}){return <header className="topbar"><div><p className="eyebrow">RESTAURANT OPERATIONS</p><h1>{active}</h1></div><div className="status"><span className="dot"/> System ready</div></header>}
