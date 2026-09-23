@@ -1,0 +1,20 @@
+export const initialRecipes = {
+  1:[{ingredientId:"ING-002",qty:0.08},{ingredientId:"ING-009",qty:0.04},{ingredientId:"ING-006",qty:0.02}],
+  4:[{ingredientId:"ING-002",qty:0.25},{ingredientId:"ING-006",qty:0.03}],
+  11:[{ingredientId:"ING-002",qty:0.25},{ingredientId:"ING-006",qty:0.02},{ingredientId:"ING-007",qty:0.03},{ingredientId:"ING-008",qty:0.04}],
+  13:[{ingredientId:"ING-003",qty:0.25},{ingredientId:"ING-006",qty:0.02}],
+  14:[{ingredientId:"ING-003",qty:0.2},{ingredientId:"ING-001",qty:0.15},{ingredientId:"ING-007",qty:0.03},{ingredientId:"ING-008",qty:0.04}],
+  15:[{ingredientId:"ING-002",qty:0.2},{ingredientId:"ING-001",qty:0.15},{ingredientId:"ING-007",qty:0.03}],
+  16:[{ingredientId:"ING-004",qty:0.25},{ingredientId:"ING-005",qty:0.2},{ingredientId:"ING-006",qty:0.04}],
+  17:[{ingredientId:"ING-004",qty:0.25},{ingredientId:"ING-006",qty:0.02},{ingredientId:"ING-008",qty:0.04}],
+  18:[{ingredientId:"ING-003",qty:0.12},{ingredientId:"ING-009",qty:0.08},{ingredientId:"ING-007",qty:0.02},{ingredientId:"ING-008",qty:0.03}],
+  19:[{ingredientId:"ING-002",qty:0.12},{ingredientId:"ING-009",qty:0.08},{ingredientId:"ING-007",qty:0.02}],
+  20:[{ingredientId:"ING-002",qty:0.18},{ingredientId:"ING-009",qty:0.08},{ingredientId:"ING-010",qty:0.03},{ingredientId:"ING-011",qty:0.05}],
+  21:[{ingredientId:"ING-003",qty:0.12},{ingredientId:"ING-009",qty:0.08},{ingredientId:"ING-008",qty:0.03}],
+  23:[{ingredientId:"ING-002",qty:0.18},{ingredientId:"ING-001",qty:0.15},{ingredientId:"ING-006",qty:0.02}],
+  24:[{ingredientId:"ING-003",qty:0.18},{ingredientId:"ING-001",qty:0.15},{ingredientId:"ING-006",qty:0.02}],
+  25:[{ingredientId:"ING-002",qty:0.1},{ingredientId:"ING-003",qty:0.1},{ingredientId:"ING-004",qty:0.1}],
+  26:[{ingredientId:"ING-001",qty:0.15}],27:[{ingredientId:"ING-009",qty:0.08}],28:[{ingredientId:"ING-005",qty:0.2},{ingredientId:"ING-006",qty:0.03}],29:[{ingredientId:"ING-005",qty:0.2},{ingredientId:"ING-011",qty:0.03}],30:[{ingredientId:"ING-008",qty:0.1},{ingredientId:"ING-007",qty:0.03}],
+  31:[{ingredientId:"ING-007",qty:0.02},{ingredientId:"ING-008",qty:0.02}],32:[{ingredientId:"ING-003",qty:0.08}],33:[{ingredientId:"ING-009",qty:0.05}],34:[{ingredientId:"ING-001",qty:0.12},{ingredientId:"ING-011",qty:0.08}],
+  46:[{ingredientId:"ING-014",qty:1}],47:[{ingredientId:"ING-013",qty:0.12},{ingredientId:"ING-011",qty:0.05},{ingredientId:"ING-012",qty:0.01}],48:[{ingredientId:"ING-013",qty:0.12}],49:[{ingredientId:"ING-013",qty:0.12}],50:[{ingredientId:"ING-014",qty:1}],51:[{ingredientId:"ING-015",qty:0.05},{ingredientId:"ING-012",qty:0.01}],52:[{ingredientId:"ING-015",qty:0.05},{ingredientId:"ING-011",qty:0.05},{ingredientId:"ING-012",qty:0.01}]
+};
