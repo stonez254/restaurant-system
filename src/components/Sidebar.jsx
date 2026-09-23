@@ -1,10 +1,10 @@
 import React from "react";
-import { BarChart3, ChefHat, ClipboardList, LayoutDashboard, Menu as MenuIcon, Settings, ShoppingBag, Table2, Truck, Users, Package, MessageSquare, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { BarChart3, ChefHat, ClipboardList, LayoutDashboard, Menu as MenuIcon, Settings, ShoppingBag, Table2, Truck, Users, Package, MessageSquare, PanelLeftClose, PanelLeftOpen, CreditCard } from "lucide-react";
 
 export const modules=[
   ["Dashboard",LayoutDashboard],["POS",ShoppingBag],["Tables",Table2],["Orders",ClipboardList],
   ["Kitchen",ChefHat],["Delivery",Truck],["Menu",MenuIcon],["Inventory",Package],
-  ["Customers",Users],["Complaints",MessageSquare],["Analytics",BarChart3],["Staff",Users],["Settings",Settings]
+  ["Customers",Users],["Payments",CreditCard],["Complaints",MessageSquare],["Analytics",BarChart3],["Staff",Users],["Settings",Settings]
 ];
 
 export default function Sidebar({collapsed,setCollapsed,active,setActive}){
