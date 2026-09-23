@@ -4,7 +4,7 @@ import { BarChart3, ChefHat, ClipboardList, LayoutDashboard, Menu as MenuIcon, S
 export const modules=[
   ["Dashboard",LayoutDashboard],["POS",ShoppingBag],["Tables",Table2],["Orders",ClipboardList],
   ["Kitchen",ChefHat],["Delivery",Truck],["Menu",MenuIcon],["Inventory",Package],
-  ["Customers",Users],["Payments",CreditCard],["Complaints",MessageSquare],["Analytics",BarChart3],["Staff",Users],["Settings",Settings]
+  ["Customers",Users],["Payments",CreditCard],["Complaints",MessageSquare],["Analytics",BarChart3],["Staff",Users],["Staff Performance",BarChart3],["Settings",Settings]
 ];
 
 export default function Sidebar({collapsed,setCollapsed,active,setActive}){
