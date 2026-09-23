@@ -20,13 +20,14 @@ export default function Analytics({orders,menu,recipes,ingredients,movements,adj
    grossSales+=gross; discounts+=discount;
    const h=new Date(o.createdAt).getHours(); hours[h]=(hours[h]||0)+net;
    channels[o.channel]=(channels[o.channel]||0)+net;
+   if(Number.isFinite(Number(o.cogs)))cogs+=Number(o.cogs);
    (o.items||[]).forEach(item=>{
     const sales=Number(item.price||0)*Number(item.qty||0);
     const cat=menuMap[item.id]?.category||"Other";
     categories[cat]=(categories[cat]||0)+sales;
     items[item.id]=items[item.id]||{name:item.name,qty:0,sales:0};
     items[item.id].qty+=Number(item.qty||0); items[item.id].sales+=sales;
-    (recipes[item.id]||[]).forEach(r=>{cogs+=(Number(r.qty)||0)*Number(item.qty||0)*Number(ingredientMap[r.ingredientId]?.cost||0);});
+    if(!Number.isFinite(Number(o.cogs))) (recipes[item.id]||[]).forEach(r=>{cogs+=(Number(r.qty)||0)*Number(item.qty||0)*Number(ingredientMap[r.ingredientId]?.cost||0);});
    });
   });
   const refunds=(adjustments||[]).filter(a=>a.type==="Refund"&&new Date(a.createdAt).getTime()>=cutoff).reduce((s,a)=>s+Number(a.amount||0),0);
@@ -41,7 +42,7 @@ export default function Analytics({orders,menu,recipes,ingredients,movements,adj
  return <section className="content">
   <div className="section-head"><div><h2>Analytics & Profit Intelligence</h2><p>Sales, estimated COGS, profit and operating trends from local POS data.</p></div><div className="range-tabs">{ranges.map(([label,days])=><button key={days} className={range===days?"active":""} onClick={()=>setRange(days)}>{label}</button>)}</div></div>
   <div className="stats analytics-stats">
-   <Metric icon={Receipt} label="Gross Sales" value={money(data.revenue)}/>
+   <Metric icon={Receipt} label="Gross Sales" value={money(data.grossSales)}/>
    <Metric icon={Wallet} label="Net Sales" value={money(data.net)}/>
    <Metric icon={Package} label="Est. COGS" value={money(data.cogs)}/>
    <Metric icon={TrendingUp} label="Gross Profit" value={money(data.grossProfit)}/>
