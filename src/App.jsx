@@ -90,7 +90,7 @@ function voidOrder(id){const o=orders.find(x=>x.id===id);if(!o||o.status==="Void
  {active==="Payments"&&<Payments orders={orders} payments={payments} setPayments={setPayments} setOrders={setOrders} money={money} staff={staff} activeStaffId={activeStaffId} refundPayment={refundPayment} recordPayment={recordPayment} log={log}/>} 
  {active==="Complaints"&&<Complaints orders={orders} complaints={complaints} setComplaints={setComplaints} adjustments={adjustments} setAdjustments={setAdjustments} types={complaintTypes} statuses={complaintStatuses} resolutions={resolutions} money={money}/>}
  {active==="Analytics"&&<Analytics orders={orders} menu={menu} recipes={recipes} ingredients={ingredients} movements={movements} adjustments={adjustments}/>}
- {active==="Operations"&&<Operations staff={staff} shifts={shifts} setShifts={setShifts} auditLogs={auditLogs} money={money} activeStaffId={activeStaffId} setActiveStaffId={setActiveStaffId} orders={orders}/>}
+ {active==="Operations"&&<Operations staff={staff} shifts={shifts} setShifts={setShifts} auditLogs={auditLogs} money={money} activeStaffId={activeStaffId} setActiveStaffId={setActiveStaffId} orders={orders} payments={payments}/>}
  {active==="Staff"&&<Staff staff={staff} setStaff={setStaff} roles={staffRoles}/>}
  {active==="Staff Performance"&&<StaffPerformance staff={staff} shifts={shifts} setShifts={setShifts} orders={orders} complaints={complaints}/>}
  {active==="Customers"&&<Customers customers={customers} setCustomers={setCustomers} types={customerTypes}/>}
