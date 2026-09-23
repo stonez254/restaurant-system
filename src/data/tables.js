@@ -6,5 +6,6 @@ export const initialTables = Array.from({ length: 12 }, (_, index) => ({
   seats: index % 3 === 0 ? 6 : 4,
   status: "Vacant",
   orderId: null,
-  mergedGroupId: null
+  mergedGroupId: null,
+  seatState: Array.from({length:index % 3 === 0 ? 6 : 4}, (_, seat) => ({seat: seat + 1, occupied: false}))
 }));
