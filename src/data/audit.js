@@ -1,0 +1,2 @@
+export const auditActions=["Order Created","Order Edited","Order Voided","Discount Applied","Payment Recorded","Stock Received","Stock Waste","Stock Adjusted","Shift Opened","Shift Closed","Staff Changed","Table Transfer","Table Merge","Delivery Assigned"];
+export const initialAuditLogs=[];
