@@ -2,11 +2,11 @@ import React,{useMemo,useState} from "react";
 import {Search,Plus,Minus,Trash2,ReceiptText,Utensils,Bike,ShoppingBag,UserRound,Armchair} from "lucide-react";
 import Empty from "./Empty";
 
-export default function POS({activeStaffId,staff,setActiveStaffId,menu,categories,modifiers,cart,addItem,changeQty,removeCart,placeOrder,channel,setChannel,selectedTable,setSelectedTable,tables,money,customers,setCustomerId,customerId,editingOrderId,cancelEdit}){
+export default function POS({discount,setDiscount,applyDiscount,activeStaffId,staff,setActiveStaffId,menu,categories,modifiers,cart,addItem,changeQty,removeCart,placeOrder,channel,setChannel,selectedTable,setSelectedTable,tables,money,customers,setCustomerId,customerId,editingOrderId,cancelEdit}){
  const [search,setSearch]=useState(""); const [category,setCategory]=useState("All"); const [modifier,setModifier]=useState("standard"); const [seat,setSeat]=useState(null);
  const tableSeats=selectedTable?.seatState||Array.from({length:selectedTable?.seats||0},(_,i)=>({seat:i+1,occupied:false}));
  const filtered=useMemo(()=>menu.filter(x=>x.active!==false&&(category==="All"||x.category===category)&&x.name.toLowerCase().includes(search.toLowerCase())),[menu,category,search]);
- const selectedModifier=modifiers.find(x=>x.id===modifier)||modifiers[0]; const total=cart.reduce((s,x)=>s+x.price*x.qty,0);
+ const selectedModifier=modifiers.find(x=>x.id===modifier)||modifiers[0]; const subtotal=cart.reduce((s,x)=>s+x.price*x.qty,0); const discountAmount=Math.min(subtotal,discount?.type==="percent"?subtotal*Math.min(100,Math.max(0,Number(discount?.value)||0))/100:Math.max(0,Number(discount?.value)||0)); const total=Math.max(0,subtotal-discountAmount);
  const add=(item)=>addItem(item,selectedModifier,seat);
  return <section className="content pos-layout"><div className="pos-main">
   <div className="toolbar"><div className="search"><Search size={17}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search menu..."/></div><div className="chips"><button className={category==="All"?"chip active":"chip"} onClick={()=>setCategory("All")}>All</button>{categories.map(c=><button className={category===c?"chip active":"chip"} onClick={()=>setCategory(c)} key={c}>{c}</button>)}</div></div>
@@ -21,6 +21,11 @@ export default function POS({activeStaffId,staff,setActiveStaffId,menu,categorie
    <select className="select" value={customerId||""} onChange={e=>setCustomerId(e.target.value||null)}><option value="">Walk-in customer</option>{customers.map(c=><option key={c.id} value={c.id}>{c.name} • {c.phone}</option>)}</select></>}
   {channel!=="Dine In"&&<select className="select" value={customerId||""} onChange={e=>setCustomerId(e.target.value||null)}><option value="">Walk-in customer</option>{customers.map(c=><option key={c.id} value={c.id}>{c.name} • {c.phone}</option>)}</select>}
   <div className="cart-items">{cart.length?cart.map(x=><div className="cart-row" key={x.key}><div><strong>{x.name}</strong><small>{x.modifier?.name||x.modifier||"Standard"}{x.seat?" • Seat "+x.seat:""}</small></div><b>{money(x.price*x.qty)}</b><div className="qty"><button onClick={()=>changeQty(x.key,-1)}><Minus size={12}/></button><span>{x.qty}</span><button onClick={()=>changeQty(x.key,1)}><Plus size={12}/></button></div><button className="icon-btn danger" onClick={()=>removeCart(x.key)}><Trash2 size={14}/></button></div>):<Empty icon={ShoppingBag} title="Cart is empty" text="Tap a menu item to add it."/>}</div>
-  <div className="cart-total"><span>Total</span><strong>{money(total)}</strong></div><button className="checkout" disabled={!cart.length||!activeStaffId||channel==="Dine In"&&!selectedTable} onClick={placeOrder}>{editingOrderId?"Save Changes":"Place Order"}</button>
+  <div className="discount-box">
+    <div className="discount-head"><strong>Discount</strong><small>Manager approval above 10% or KSh 500</small></div>
+    <div className="discount-controls"><select value={discount?.type||"percent"} onChange={e=>setDiscount({...discount,type:e.target.value})}><option value="percent">Percent %</option><option value="fixed">Fixed KSh</option></select><input type="number" min="0" step="0.01" max={discount?.type==="percent"?100:subtotal} value={discount?.value||0} onChange={e=>setDiscount({...discount,value:e.target.value})}/><input placeholder="Reason required" value={discount?.reason||""} onChange={e=>setDiscount({...discount,reason:e.target.value})}/><button className="btn" onClick={()=>applyDiscount(discount)} disabled={!subtotal}>Apply</button></div>
+    {discountAmount>0&&<small className="discount-applied">Discount: -{money(discountAmount)}{discount?.approvedByName?" • Approved by "+discount.approvedByName:""}</small>}
+  </div>
+  <div className="cart-total"><span>Subtotal</span><strong>{money(subtotal)}</strong></div><div className="cart-total"><span>Discount</span><strong>-{money(discountAmount)}</strong></div><div className="cart-total"><span>Total</span><strong>{money(total)}</strong></div><button className="checkout" disabled={!cart.length||!activeStaffId||channel==="Dine In"&&!selectedTable} onClick={placeOrder}>{editingOrderId?"Save Changes":"Place Order"}</button>
  </aside></section>
 }
