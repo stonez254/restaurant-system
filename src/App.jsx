@@ -33,7 +33,7 @@ export default function App(){
  {active==="Tables"&&<Tables tables={tables} onTable={openTable} onMerge={mergeTables} onTransfer={(a,id)=>{const t=tables.find(x=>x.id===id),o=orders.find(x=>x.id===a.orderId);if(t&&o)transferOrder(o,t)}} onClean={cleanTable} tableStatuses={tableStatuses}/>}
  {active==="Orders"&&<Orders orders={orders} update={updateOrder} money={money} onEdit={editOrder} onSplit={splitOrder} onTransfer={o=>{const n=prompt("Transfer "+o.id+" to table (e.g. T5):");const t=tables.find(x=>x.name.toLowerCase()===(n||"").trim().toLowerCase()&&x.status==="Vacant");if(t)transferOrder(o,t);else if(n)alert("That table is not vacant or does not exist.")}}/>}
  {active==="Kitchen"&&<Kitchen orders={orders} update={updateOrder} money={money}/>}
- {active==="Delivery"&&<Delivery orders={orders} update={updateOrder} money={money} riders={riders} setRiders={setRiders} riderStatuses={riderStatuses}/>}
+ {active==="Delivery"&&<Delivery orders={orders} update={updateOrder} money={money} riders={riders} setRiders={setRiders} riderStatuses={riderStatuses} setOrders={setOrders}/>}
  {active==="Menu"&&<MenuManager menu={menu} setMenu={setMenu} categories={categories} money={money}/>}
  {active==="Inventory"&&<Inventory ingredients={ingredients} setIngredients={setIngredients} movements={movements} setMovements={setMovements} money={money}/>}
  {active==="Payments"&&<Payments orders={orders} payments={payments} setPayments={setPayments} setOrders={setOrders} money={money}/>}
