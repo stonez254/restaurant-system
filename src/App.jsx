@@ -11,6 +11,7 @@ import Delivery from "./components/Delivery";
 import MenuManager from "./components/MenuManager";
 import Staff from "./components/Staff";
 import Customers from "./components/Customers";
+import Inventory from "./components/Inventory";
 import DeliveryRiders from "./components/DeliveryRiders";
 import {initialStaff,staffRoles} from "./data/staff";
 import {initialCustomers,customerTypes} from "./data/customers";
@@ -19,6 +20,8 @@ import {menuItems,categories,modifiers} from "./data/menu";
 import {initialTables,tableStatuses} from "./data/tables";
 import {loadStore,saveStore} from "./lib/storage";
 import {orderStatuses} from "./data/workflows";
+import {initialIngredients} from "./data/inventory";
+import {initialRecipes} from "./data/recipes";
 import "./styles.css";
 
 const money=n=>"KSh "+Number(n||0).toLocaleString("en-KE",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -32,10 +35,14 @@ export default function App(){
  const [staff,setStaff]=useState(()=>loadStore("restaurant-staff",initialStaff));
  const [customers,setCustomers]=useState(()=>loadStore("restaurant-customers",initialCustomers));
  const [riders,setRiders]=useState(()=>loadStore("restaurant-riders",initialRiders));
- useEffect(()=>saveStore("restaurant-menu",menu),[menu]); useEffect(()=>saveStore("restaurant-tables",tables),[tables]); useEffect(()=>saveStore("restaurant-orders",orders),[orders]); useEffect(()=>saveStore("restaurant-staff",staff),[staff]); useEffect(()=>saveStore("restaurant-customers",customers),[customers]); useEffect(()=>saveStore("restaurant-riders",riders),[riders]);
+ const [ingredients,setIngredients]=useState(()=>loadStore("restaurant-ingredients",initialIngredients));
+ const [recipes]=useState(()=>loadStore("restaurant-recipes",initialRecipes));
+ const [movements,setMovements]=useState(()=>loadStore("restaurant-stock-movements",[]));
+ useEffect(()=>saveStore("restaurant-menu",menu),[menu]); useEffect(()=>saveStore("restaurant-tables",tables),[tables]); useEffect(()=>saveStore("restaurant-orders",orders),[orders]); useEffect(()=>saveStore("restaurant-staff",staff),[staff]); useEffect(()=>saveStore("restaurant-customers",customers),[customers]); useEffect(()=>saveStore("restaurant-riders",riders),[riders]); useEffect(()=>saveStore("restaurant-ingredients",ingredients),[ingredients]); useEffect(()=>saveStore("restaurant-recipes",recipes),[recipes]); useEffect(()=>saveStore("restaurant-stock-movements",movements),[movements]);
 
  const todaySales=orders.filter(o=>o.status===orderStatuses[3]).reduce((s,o)=>s+o.total,0);
  const occupied=tables.filter(t=>t.status!=="Vacant").length;
+ const lowStock=ingredients.filter(i=>i.stock<=i.reorderLevel).length;
  const openOrders=orders.filter(o=>o.status!==orderStatuses[3]).length;
 
  function addItem(item,modifier=modifiers[0]){
@@ -47,6 +54,11 @@ export default function App(){
  function removeCart(key){setCart(c=>c.filter(x=>x.key!==key))}
  function placeOrder(){
   if(!cart.length||(channel==="Dine In"&&!selectedTable))return;
+  const required={}; cart.forEach(x=>(recipes[x.id]||[]).forEach(r=>{required[r.ingredientId]=(required[r.ingredientId]||0)+r.qty*x.qty;}));
+  const shortages=Object.entries(required).filter(([id,qty])=>{const i=ingredients.find(x=>x.id===id);return !i||i.stock<qty;});
+  if(shortages.length){alert("Insufficient stock: "+shortages.map(([id,qty])=>{const i=ingredients.find(x=>x.id===id);return (i?.name||id)+" ("+qty+" "+(i?.unit||"")+")";}).join(", "));return;}
+  setIngredients(xs=>xs.map(i=>required[i.id]?{...i,stock:i.stock-required[i.id]}:i));
+  setMovements(ms=>[...Object.entries(required).map(([ingredientId,qty])=>({id:"MOV-"+Date.now()+"-"+ingredientId,ingredientId,type:"Sale",qty,cost:(ingredients.find(i=>i.id===ingredientId)?.cost||0)*qty,createdAt:new Date().toISOString()})),...ms]);
   const id="ORD-"+String(Date.now()).slice(-6),total=cart.reduce((s,x)=>s+x.price*x.qty,0);
   const order={id,channel,table:selectedTable?.name||null,items:cart,total,status:orderStatuses[0],createdAt:new Date().toISOString()};
   setOrders(o=>[order,...o]);
@@ -63,14 +75,14 @@ export default function App(){
   else if(t.status==="Dirty/Needs Cleaning")setTables(ts=>ts.map(x=>x.id===t.id?{...x,status:"Vacant",orderId:null}:x));
  }
  return <div className="app"><Sidebar collapsed={collapsed} setCollapsed={setCollapsed} active={active} setActive={setActive}/><main className="main"><Topbar active={active}/>
-  {active==="Dashboard"&&<Dashboard money={money} sales={todaySales} openOrders={openOrders} occupied={occupied} lowStock={0} orders={orders} tables={tables} onPOS={()=>setActive("POS")}/>}
+  {active==="Dashboard"&&<Dashboard money={money} sales={todaySales} openOrders={openOrders} occupied={occupied} lowStock={lowStock} orders={orders} tables={tables} onPOS={()=>setActive("POS")}/>}
   {active==="POS"&&<POS menu={menu} categories={categories} modifiers={modifiers} cart={cart} addItem={addItem} changeQty={changeQty} removeCart={removeCart} placeOrder={placeOrder} channel={channel} setChannel={setChannel} selectedTable={selectedTable} setSelectedTable={setSelectedTable} tables={tables} money={money}/>}
   {active==="Tables"&&<Tables tables={tables} onTable={toggleTable} tableStatuses={tableStatuses}/>}
   {active==="Orders"&&<Orders orders={orders} update={updateOrder} money={money}/>}
   {active==="Kitchen"&&<Kitchen orders={orders} update={updateOrder} money={money}/>}
   {active==="Delivery"&&<Delivery orders={orders} update={updateOrder} money={money} riders={riders} setRiders={setRiders} riderStatuses={riderStatuses}/>}
-  {active==="Menu"&&<MenuManager menu={menu} setMenu={setMenu} categories={categories} money={money}/>} {active==="Staff"&&<Staff staff={staff} setStaff={setStaff} roles={staffRoles}/>} {active==="Customers"&&<Customers customers={customers} setCustomers={setCustomers} types={customerTypes}/>}
-  {!["Dashboard","POS","Tables","Orders","Kitchen","Delivery","Menu"].includes(active)&&<ModulePreview name={active}/>}
+  {active==="Menu"&&<MenuManager menu={menu} setMenu={setMenu} categories={categories} money={money}/>} {active==="Inventory"&&<Inventory ingredients={ingredients} setIngredients={setIngredients} movements={movements} setMovements={setMovements} money={money}/>} {active==="Staff"&&<Staff staff={staff} setStaff={setStaff} roles={staffRoles}/>} {active==="Customers"&&<Customers customers={customers} setCustomers={setCustomers} types={customerTypes}/>}
+  {!["Dashboard","POS","Tables","Orders","Kitchen","Delivery","Menu","Inventory","Staff","Customers"].includes(active)&&<ModulePreview name={active}/>}
  </main></div>;
 }
 function ModulePreview({name}){return <section className="content"><div className="module"><div className="module-icon"><Settings size={28}/></div><h2>{name}</h2><p>This module is connected to the shared POS data model. Its dedicated workflow is next in the build.</p></div></section>}
