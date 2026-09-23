@@ -14,6 +14,7 @@ import Customers from "./components/Customers";
 import Inventory from "./components/Inventory";
 import DeliveryRiders from "./components/DeliveryRiders";
 import Payments from "./components/Payments";
+import Complaints from "./components/Complaints";
 import {initialStaff,staffRoles} from "./data/staff";
 import {initialCustomers,customerTypes} from "./data/customers";
 import {initialRiders,riderStatuses} from "./data/delivery";
@@ -24,6 +25,7 @@ import {orderStatuses} from "./data/workflows";
 import {initialIngredients} from "./data/inventory";
 import {initialRecipes} from "./data/recipes";
 import {initialPayments} from "./data/payments";
+import {initialComplaints,initialAdjustments,complaintTypes,complaintStatuses,resolutions} from "./data/complaints";
 import "./styles.css";
 
 const money=n=>"KSh "+Number(n||0).toLocaleString("en-KE",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -41,7 +43,9 @@ export default function App(){
  const [recipes]=useState(()=>loadStore("restaurant-recipes",initialRecipes));
  const [movements,setMovements]=useState(()=>loadStore("restaurant-stock-movements",[]));
  const [payments,setPayments]=useState(()=>loadStore("restaurant-payments",initialPayments));
- useEffect(()=>saveStore("restaurant-menu",menu),[menu]); useEffect(()=>saveStore("restaurant-tables",tables),[tables]); useEffect(()=>saveStore("restaurant-orders",orders),[orders]); useEffect(()=>saveStore("restaurant-staff",staff),[staff]); useEffect(()=>saveStore("restaurant-customers",customers),[customers]); useEffect(()=>saveStore("restaurant-riders",riders),[riders]); useEffect(()=>saveStore("restaurant-ingredients",ingredients),[ingredients]); useEffect(()=>saveStore("restaurant-recipes",recipes),[recipes]); useEffect(()=>saveStore("restaurant-stock-movements",movements),[movements]); useEffect(()=>saveStore("restaurant-payments",payments),[payments]);
+ const [complaints,setComplaints]=useState(()=>loadStore("restaurant-complaints",initialComplaints));
+ const [adjustments,setAdjustments]=useState(()=>loadStore("restaurant-adjustments",initialAdjustments));
+ useEffect(()=>saveStore("restaurant-menu",menu),[menu]); useEffect(()=>saveStore("restaurant-tables",tables),[tables]); useEffect(()=>saveStore("restaurant-orders",orders),[orders]); useEffect(()=>saveStore("restaurant-staff",staff),[staff]); useEffect(()=>saveStore("restaurant-customers",customers),[customers]); useEffect(()=>saveStore("restaurant-riders",riders),[riders]); useEffect(()=>saveStore("restaurant-ingredients",ingredients),[ingredients]); useEffect(()=>saveStore("restaurant-recipes",recipes),[recipes]); useEffect(()=>saveStore("restaurant-stock-movements",movements),[movements]); useEffect(()=>saveStore("restaurant-payments",payments),[payments]); useEffect(()=>saveStore("restaurant-complaints",complaints),[complaints]); useEffect(()=>saveStore("restaurant-adjustments",adjustments),[adjustments]);
 
  const todaySales=orders.filter(o=>o.status===orderStatuses[3]).reduce((s,o)=>s+o.total,0);
  const occupied=tables.filter(t=>t.status!=="Vacant").length;
@@ -84,8 +88,8 @@ export default function App(){
   {active==="Orders"&&<Orders orders={orders} update={updateOrder} money={money}/>}
   {active==="Kitchen"&&<Kitchen orders={orders} update={updateOrder} money={money}/>}
   {active==="Delivery"&&<Delivery orders={orders} update={updateOrder} money={money} riders={riders} setRiders={setRiders} riderStatuses={riderStatuses}/>}
-  {active==="Menu"&&<MenuManager menu={menu} setMenu={setMenu} categories={categories} money={money}/>} {active==="Inventory"&&<Inventory ingredients={ingredients} setIngredients={setIngredients} movements={movements} setMovements={setMovements} money={money}/>} {active==="Payments"&&<Payments orders={orders} payments={payments} setPayments={setPayments} money={money}/>} {active==="Staff"&&<Staff staff={staff} setStaff={setStaff} roles={staffRoles}/>} {active==="Customers"&&<Customers customers={customers} setCustomers={setCustomers} types={customerTypes}/>}
-  {!["Dashboard","POS","Tables","Orders","Kitchen","Delivery","Menu","Inventory","Payments","Staff","Customers"].includes(active)&&<ModulePreview name={active}/>}
+  {active==="Menu"&&<MenuManager menu={menu} setMenu={setMenu} categories={categories} money={money}/>} {active==="Inventory"&&<Inventory ingredients={ingredients} setIngredients={setIngredients} movements={movements} setMovements={setMovements} money={money}/>} {active==="Payments"&&<Payments orders={orders} payments={payments} setPayments={setPayments} money={money}/>} {active==="Complaints"&&<Complaints orders={orders} complaints={complaints} setComplaints={setComplaints} adjustments={adjustments} setAdjustments={setAdjustments} types={complaintTypes} statuses={complaintStatuses} resolutions={resolutions} money={money}/>} {active==="Staff"&&<Staff staff={staff} setStaff={setStaff} roles={staffRoles}/>} {active==="Customers"&&<Customers customers={customers} setCustomers={setCustomers} types={customerTypes}/>}
+  {!["Dashboard","POS","Tables","Orders","Kitchen","Delivery","Menu","Inventory","Payments","Complaints","Staff","Customers"].includes(active)&&<ModulePreview name={active}/>}
  </main></div>;
 }
 function ModulePreview({name}){return <section className="content"><div className="module"><div className="module-icon"><Settings size={28}/></div><h2>{name}</h2><p>This module is connected to the shared POS data model. Its dedicated workflow is next in the build.</p></div></section>}
