@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react";import {canAccess} from "../data/permissions";
 import { BarChart3, ChefHat, ClipboardList, LayoutDashboard, Menu as MenuIcon, Settings, ShoppingBag, Table2, Truck, Users, Package, MessageSquare, PanelLeftClose, PanelLeftOpen, CreditCard } from "lucide-react";
 
 export const modules=[
@@ -8,7 +8,7 @@ export const modules=[
 ];
 
 export default function Sidebar({collapsed,setCollapsed,active,setActive,role}){
- const allowed=role?modules.filter(([label])=>role==="Manager"||["Manager"].includes(role)||({Cashier:["Dashboard","POS","Tables","Orders","Customers","Payments","Complaints"],Server:["Dashboard","POS","Tables","Orders","Customers"],Kitchen:["Dashboard","Orders","Kitchen"],Rider:["Dashboard","Delivery"]}[role]||[]).includes(label)):modules;\n return <aside className={collapsed?"sidebar collapsed":"sidebar"}>
+ const allowed=modules.filter(([label])=>canAccess(role||"Manager",label)); return <aside className={collapsed?"sidebar collapsed":"sidebar"}>
   <div className="brand"><div className="brand-mark">R</div>{!collapsed&&<div><strong>Restaurant POS</strong><span>Web Management System</span></div>}</div>
   <nav>{allowed.map(([label,Icon])=><button className={active===label?"nav-item active":"nav-item"} onClick={()=>setActive(label)} key={label} title={label}><Icon size={19}/>{!collapsed&&<span>{label}</span>}</button>)}</nav>
   <button className="collapse" onClick={()=>setCollapsed(!collapsed)}>{collapsed?<PanelLeftOpen size={19}/>:<PanelLeftClose size={19}/>} {!collapsed&&<span>Collapse menu</span>}</button>
