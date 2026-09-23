@@ -1,0 +1,9 @@
+import React from "react";
+import { ClipboardList } from "lucide-react";
+import Empty from "./Empty";
+export default function Dashboard({money,sales,openOrders,occupied,lowStock,orders,tables,onPOS}){
+ return <section className="content"><div className="welcome"><div><h2>Good day</h2><p>Run orders, tables and kitchen activity from one control center.</p></div><button className="primary" onClick={onPOS}>Open POS</button></div>
+ <div className="stats">{[["Today's Sales",money(sales),"Completed sales"],["Open Orders",openOrders,"Pending fulfillment"],["Occupied Tables",occupied,"Dining floor"],["Low Stock",lowStock,"Needs attention"]].map(c=><article className="card" key={c[0]}><span>{c[0]}</span><strong>{c[1]}</strong><small>{c[2]}</small></article>)}</div>
+ <div className="grid"><article className="panel"><div className="panel-head"><h3>Order activity</h3><span>Live</span></div>{orders.length?<div className="list">{orders.slice(0,6).map(o=><div className="list-row" key={o.id}><div><strong>{o.id}</strong><small>{o.channel}{o.table?" • "+o.table:""}</small></div><span className={"pill "+o.status.toLowerCase().replaceAll(" ","-")}>{o.status}</span><b>{money(o.total)}</b></div>)}</div>:<Empty icon={ClipboardList} title="No orders yet" text="Orders created from the POS will appear here."/>}</article>
+ <article className="panel"><div className="panel-head"><h3>Floor status</h3><span>Live</span></div><div className="table-mini">{tables.map(t=><div className={"mini-table "+t.status.toLowerCase().replaceAll(/[^a-z]+/g,"-")} key={t.id}><b>{t.name}</b><small>{t.status}</small></div>)}</div></article></div></section>
+}
